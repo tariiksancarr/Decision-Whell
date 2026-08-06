@@ -1,0 +1,28 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Karar Çarkı",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Çark",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://tariiksancarr.github.io/Karar-cark-/logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "isSquare": true,
+      "isPng": true,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 512,
+      "is512x512": true,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ],
+  "id": "com.tariiksancar.cark",
+  "description": "kararsız kaldığında seçmeye yarayan çark"
+}
