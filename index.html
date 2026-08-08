@@ -2,302 +2,40 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <!-- Mobil uyumluluk etiketi -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Karar Çarkı</title>
- <style>
-    /* Temel Sayfa Düzeni */
-    html, body {
-      width: 100%;
-      height: 100%; /* Ekran yüksekliğini tam kaplasın */
-      margin: 0;
-      padding: 0;
-      overflow: hidden; /* Telefon ekranında aşağı yukarı gereksiz kaydırmaları engeller */
-    }
-
-    body {
-      background: linear-gradient(135deg, #121212, #1e1e1e);
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh; /* Telefonun tarayıcı çubukları dahil ekranı tam kaplar */
-      box-sizing: border-box;
-      padding: 10px;
-    }
-
-    /* Kapsayıcı Kutu - Telefon ekranının %95'ini kaplasın */
-    .container {
-      background-color: #1e1e1e;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-      text-align: center;
-      width: 95%; /* Sağ ve soldan ekranı tam doldursun */
-      max-width: 360px; /* Çok büyük ekranlarda aşırı büyümesin */
-      box-sizing: border-box;
-    }
-
-    /* Çark (Canvas) - Mobildeki en büyük boyuta ulaşsın */
-    canvas {
-      margin-top: 15px;
-      border: 4px solid #03dac6;
-      border-radius: 50%;
-      width: 100%;       /* Kutunun genişliğine tamamen yayılsın */
-      max-width: 280px;  /* Telefon ekranında taşmaması için ideal sınır */
-      height: auto;      
-    }
-
-    /* Girdiler ve Butonlar */
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      border-radius: 6px;
-      background-color: #2a2a2a;
-      color: white;
-      font-size: 16px;
-      border: none;
-      box-sizing: border-box;
-    }
-
-    button {
-      background-color: #6200ea;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      width: 100%;
-      margin-top: 8px;
-      box-sizing: border-box;
-    }
-
-    button:hover {
-      background-color: #7c4dff;
-    }
-
-    /* Sonuç Ekranları */
-    #sonucYazisi {
-      margin-top: 20px;
-      color: #03dac6;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    /* Modal (Açılır Pencere) */
-    .modal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    .modal-content {
-      background: #1e1e1e;
-      padding: 25px;
-      border-radius: 12px;
-      text-align: center;
-      color: white;
-      width: 100%;
-      max-width: 320px;
-      box-sizing: border-box;
-    }
-
-    .modal-content .chosen {
-      font-size: 24px;
-      color: #e91e63;
-      font-weight: bold;
-    }
-  </style>
+  <title>Karar Çarkı 🎡</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="container">
+    <div class="lang-container">
+      <button id="langTR" class="lang-btn active">TR 🇹🇷</button>
+      <button id="langEN" class="lang-btn">EN 🇬🇧</button>
+    </div>
 
-  <!-- Ad giriş ekranı -->
-  <div id="loginScreen" class="container">
-    <h2>Adınızı Girin</h2>
-    <input id="nameInput" placeholder="Adınız">
-    <button id="loginBtn">Giriş</button>
-    <p id="welcomeMessage" style="margin-top: 15px; font-weight: bold; color: #03dac6;"></p>
-  </div>
+    <h2 id="mainTitle">Karar Çarkı 🎡</h2>
+    <div class="input-group" id="inputContainer">
+ 
+      <div class="input-wrapper">
+        <input type="text" class="option-input" placeholder="Seçenek 1 (Örn: Ders Çalışmak)">
+      </div>
+      <div class="input-wrapper">
+        <input type="text" class="option-input" placeholder="Seçenek 2 (Örn: Film İzlemek)">
+      </div>
+    </div>
+    <div class="btn-group">
+      <button id="addOptionBtn">➕ Seçenek Ekle</button>
+      <button id="kararverbtn">Çarkı Döndür 🚀</button>
+    </div>
+    <div class="wheel-box">
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+    </div>
 
-  <!-- Çark ekranı (Giriş yapılana kadar tamamen gizli) -->
-  <div id="appScreen" class="container" style="display:none;">
-    <h2>Karar Çarkı 🎡</h2>
-    <input id="optionInput1" placeholder="Seçenek 1">
-    <input id="optionInput2" placeholder="Seçenek 2">
-    <input id="optionInput3" placeholder="Seçenek 3">
-    <button id="kararverbtn">Çarkı Döndür</button>
-
-    <canvas id="wheelCanvas" width="300" height="300"></canvas>
     <p id="sonucYazisi"></p>
-
+    <div class="watermark">BY TARIK SANCAR</div>
     <audio id="audio" src="music.mp3"></audio>
   </div>
-
-<script>
-// --- Giriş ekranı elementleri ---
-let loginBtn = document.getElementById("loginBtn");
-let nameInput = document.getElementById("nameInput");
-let welcomeMessage = document.getElementById("welcomeMessage");
-let loginScreen = document.getElementById("loginScreen");
-let appScreen = document.getElementById("appScreen");
-
-loginBtn.addEventListener("click", () => {
-    let name = nameInput.value.trim();
-    
-    // Boş isim kontrolü
-    if (name === "") {
-        welcomeMessage.style.color = "#ff5722";
-        welcomeMessage.textContent = "Lütfen geçerli bir ad girin!";
-        return;
-    }
-    
-    welcomeMessage.style.color = "#03dac6";
-    if (name.toLowerCase() === "tarık" || name.toLowerCase() === "tarik") {
-        welcomeMessage.textContent = "Hoşgeldin kralım 👑";
-    } else if (name.toLowerCase() === "zeynep") {
-        welcomeMessage.textContent = "Annene yardım etmeyi unutma Zeynep ❤️ Sevgiler, Tarık abin";
-    } else {
-        welcomeMessage.textContent = "Hoşgeldin " + name + "!";
-    }
-    
-    // Mobilde flex düzeninin bozulmaması için display ayarı güncellendi
-    setTimeout(() => {
-        loginScreen.style.display = "none";
-        appScreen.style.display = "block"; // Blok düzenine geçerek ekranı ortalar
-        drawWheel(secenekler); // Çarkı ilk kez ekran açıldığında çizdiriyoruz
-    }, 2000);
-});
-
-// --- Çark elementleri ---
-let kararBtn = document.getElementById("kararverbtn");
-let sonucYazisi = document.getElementById("sonucYazisi");
-let music = document.getElementById("audio");
-let canvas = document.getElementById("wheelCanvas");
-let ctx = canvas.getContext("2d");
-
-let secenekler = ["Seçenek 1", "Seçenek 2", "Seçenek 3"];
-let startAngle = 0;
-let spinTimeout = null;
-let spinAngleIncrement = 0;
-let renkler = ["#e91e63", "#ff5722", "#4caf50"];
-
-function drawWheel(options) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let arc = Math.PI * 2 / options.length;
-    for (let i = 0; i < options.length; i++) {
-        ctx.beginPath();
-        ctx.fillStyle = renkler[i % renkler.length];
-        ctx.moveTo(150, 150);
-        ctx.arc(150, 150, 150, arc * i + startAngle, arc * (i + 1) + startAngle);
-        ctx.fill();
-        ctx.save();
-        ctx.translate(150, 150);
-        ctx.rotate(arc * i + startAngle + arc / 2);
-        ctx.fillStyle = "white";
-        ctx.font = "14px Arial";
-        ctx.fillText(options[i], 60, 10);
-        ctx.restore();
-    }
-    // Üst kısımdaki ok işareti (Tam 12 yönünde)
-    ctx.beginPath();
-    ctx.moveTo(150, 0);
-    ctx.lineTo(140, 20);
-    ctx.lineTo(160, 20);
-    ctx.closePath();
-    ctx.fillStyle = "#03dac6";
-    ctx.fill();
-}
-
-function rotateWheel() {
-    spinAngleIncrement *= 0.97;
-    startAngle += (spinAngleIncrement * Math.PI / 180);
-    drawWheel(secenekler);
-    if (spinAngleIncrement > 0.1) {
-        spinTimeout = requestAnimationFrame(rotateWheel);
-    } else {
-        stopWheel();
-    }
-}
-
-function spinWheel(options) {
-    secenekler = options;
-    spinAngleIncrement = Math.random() * 10 + 30;
-    rotateWheel();
-    
-    if (music) {
-        music.currentTime = 0;
-        music.play().catch(e => console.log("Müzik çalma kısıtlaması:", e));
-    }
-}
-
-function stopWheel() {
-    cancelAnimationFrame(spinTimeout);
-    let arc = Math.PI * 2 / secenekler.length;
-    
-    // Açıyı dereceye çevirip üst oka göre senkronize etme (270 derece kaydırma)
-    let degrees = (startAngle * 180 / Math.PI) % 360;
-    let index = Math.floor((360 - degrees + 270) % 360 / (arc * 180 / Math.PI));
-    index = (index + secenekler.length) % secenekler.length; // Eksiye düşmeyi önler
-    
-    let chosen = secenekler[index];
-    openResultModal(chosen, secenekler);
-}
-
-function openResultModal(chosen, options) {
-    let modal = document.createElement("div");
-    modal.className = "modal";
-    modal.innerHTML = `
-      <div class="modal-content">
-        <h3>Seçilen Seçenek 🎯</h3>
-        <p class="chosen">${chosen}</p>
-        <h4>Tüm Seçenekler:</h4>
-        <ul>${options.map(o => `<li>${o}</li>`).join("")}</ul>
-        <button id="retryBtn">🔄 Tekrar Çevir</button>
-        <button id="okBtn">✅ Tamam</button>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    document.getElementById("retryBtn").addEventListener("click", () => {
-        document.body.removeChild(modal);
-        kararBtn.click();
-    });
-
-    document.getElementById("okBtn").addEventListener("click", () => {
-        if (music) {
-            music.pause();
-            music.currentTime = 0;
-        }
-        document.body.removeChild(modal);
-        startAngle = 0;
-        drawWheel(secenekler);
-    });
-}
-
-kararBtn.addEventListener("click", function() {
-    let s1 = document.getElementById("optionInput1").value.trim();
-    let s2 = document.getElementById("optionInput2").value.trim();
-    let s3 = document.getElementById("optionInput3").value.trim();
-    
-    if (s1 === "" || s2 === "" || s3 === "") {
-        sonucYazisi.textContent = "Lütfen 3 seçeneği de doldurun.";
-        return;
-    }
-    
-    sonucYazisi.textContent = "";
-    let options = [s1, s2, s3];
-    spinWheel(options);
-});
-</script>
+  
+  <script src="script.js"></script>
 </body>
 </html>
