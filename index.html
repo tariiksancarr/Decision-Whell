@@ -8,7 +8,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- Dil Değiştirme Butonları -->
     <div class="lang-container">
     <button id="dilDegistirBtn" class="lang-btn">EN</button>
     <button id="sesToggleBtn" class="lang-btn audio-btn">
@@ -20,9 +19,7 @@
 
     <h2 id="mainTitle">Karar Çarkı 🎡</h2>
     
-    <!-- Dinamik Giriş Alanları Konteyneri -->
     <div class="input-group" id="inputContainer">
-      <!-- İlk başta sadece 2 zorunlu seçenek görünecek -->
       <div class="input-wrapper">
         <input type="text" class="option-input" placeholder="Seçenek 1 (Örn: Ders Çalışmak)">
       </div>
@@ -31,20 +28,17 @@
       </div>
     </div>
 
-    <!-- Seçenek Ekleme ve Döndürme Butonları -->
     <div class="btn-group">
       <button id="addOptionBtn">➕ Seçenek Ekle</button>
       <button id="kararverbtn">Çarkı Döndür 🚀</button>
     </div>
     
-    <!-- Çark Alanı -->
     <div class="wheel-box">
       <canvas id="wheelCanvas" width="300" height="300"></canvas>
     </div>
 
     <p id="sonucYazisi"></p>
     <div class="watermark">BY TARIK SANCAR</div>
-    <!-- Ses Dosyası -->
     <audio id="audio" src="music.mp3"></audio>
 
   </div>
