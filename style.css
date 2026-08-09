@@ -19,6 +19,7 @@ body {
   max-width: 400px;
   width: 90%;
   border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative; /* Butonların konumlanması için şart */
 }
 
 h2 {
@@ -30,31 +31,150 @@ h2 {
   -webkit-text-fill-color: transparent;
 }
 
+/* --- YENİLENEN BUTON GRUBU KAPSAYICISI --- */
 .lang-container {
   display: flex;
   justify-content: flex-end;
+  align-items: center; /* SİHİRLİ SATIR: Butonların üst çizgilerini milimetrik olarak eşitler */
   gap: 8px;
   margin-bottom: 20px;
 }
 
+
+/* --- MODERN VE PARLAK NEON BUTON STİLİ --- */
 .lang-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 6px 12px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(168, 85, 247, 0.4); /* Tasarıma uygun mor çizgi */
+  padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
-  color: #94a3b8;
+  color: #e2e8f0;
   font-weight: 600;
-  transition: all 0.3s ease;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  height: 38px;
+  min-width: 45px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.lang-btn.active {
-  background: #6366f1;
-  color: white;
-  box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
-  border-color: #818cf8;
+/* Üzerine gelindiğinde mor neon parlama */
+.lang-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+  color: #ffffff;
+  border-color: rgba(168, 85, 247, 0.8);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+  transform: translateY(-1px);
 }
 
+.lang-btn:active {
+  transform: translateY(1px);
+}
+
+/* --- SES BUTONUNA ÖZEL EK PARÇALAR --- */
+.audio-btn {
+  padding: 8px 12px;
+}
+
+.line-strike {
+  position: absolute;
+  width: 80%;
+  height: 2.5px;
+  background-color: #ef4444; /* Neon Kırmızı Çizgi */
+  box-shadow: 0 0 8px #ef4444;
+  transform: rotate(45deg) scaleX(0);
+  transition: transform 0.2s ease-in-out;
+  transform-origin: center;
+}
+
+/* Ses kapalıyken (muted) butonun alacağı hal */
+.lang-btn.muted {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+}
+
+.lang-btn.muted:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+.lang-btn.muted .line-strike {
+  transform: rotate(45deg) scaleX(1.2); /* Çizgiyi çeker */
+}
+
+.lang-btn.muted .speaker-icon {
+  opacity: 0.4;
+
+
+}
+/* Genel Buton Yapısı */
+.audio-btn {
+    position: relative;
+    background: rgba(255, 255, 255, 0.07);
+    color: #e2e8f0;
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.1);
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.audio-btn:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.8);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Kırmızı Çapraz Çizgi Tasarımı */
+.line-strike {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background-color: #ef4444; /* Neon Kırmızı */
+    box-shadow: 0 0 8px #ef4444;
+    transform: rotate(45deg) scaleX(0); /* İlk başta gizli ve boyutu sıfır */
+    transition: transform 0.2s ease-in-out;
+    transform-origin: center;
+}
+
+/* --- SES KAPALI DURUMU (MUTED) --- */
+.audio-btn.muted {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+}
+
+.audio-btn.muted:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.8);
+}
+
+/* Ses kapalıyken çizgiyi aktifleştir */
+.audio-btn.muted .line-strike {
+    transform: rotate(45deg) scaleX(1.2); /* Çizgi görünür ve uzar */
+}
+
+/* İkonun hafif sönükleşmesi */
+.audio-btn.muted .speaker-icon {
+    opacity: 0.5;
+}
+
+
+
+/* Giriş Satırı Düzeni */
 .input-wrapper {
   display: flex;
   align-items: center;
@@ -81,6 +201,7 @@ h2 {
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 
+/* Silme Butonu (Çarpı) */
 .remove-btn {
   background: rgba(244, 63, 94, 0.2);
   border: 1px solid #f43f5e;
@@ -105,6 +226,7 @@ h2 {
   margin-top: 15px;
 }
 
+/* Seçenek Ekleme Butonu */
 #addOptionBtn {
   background: rgba(99, 102, 241, 0.2);
   border: 1px solid #6366f1;
@@ -168,6 +290,7 @@ h2 {
   min-height: 24px;
 }
 
+/* Modal Yapısı */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -210,10 +333,12 @@ h2 {
 #modalOkBtn { background: linear-gradient(135deg, #10b981, #059669); color: white; }
 #modalRetryBtn:hover { background: #334155; }
 #modalOkBtn:hover { opacity: 0.9; }
+/* Ana panelin pozisyon ayarı (Filigranın panel dışına taşmaması için gereklidir) */
 .container {
-  position: relative;
+  position: relative; /* Eğer CSS'inizde yoksa bu satırı ekleyin veya kontrol edin */
 }
 
+/* Çarkın dışındaki sağ alt filigran */
 .watermark {
   position: absolute;
   bottom: 60px;
@@ -221,8 +346,8 @@ h2 {
   font-size: 11px;
   font-weight: bold;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.35); /* Hafif saydam beyaz */
   letter-spacing: 0.5px;
-  user-select: none;
-  pointer-events: none;
+  user-select: none; /* Kullanıcının yazıyı kazara seçmesini engeller */
+  pointer-events: none; /* Tıklamaları engeller, arkadaki elemanları etkilemez */
 }
