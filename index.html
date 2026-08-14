@@ -7,18 +7,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <div class="container">
+
+    <!-- Dil ve ses butonları -->
     <div class="lang-container">
-    <button id="dilDegistirBtn" class="lang-btn">EN</button>
-    <button id="sesToggleBtn" class="lang-btn audio-btn">
+      <button id="dilDegistirBtn" class="lang-btn">EN</button>
+      <button id="sesToggleBtn" class="lang-btn audio-btn">
         <span class="speaker-icon">🔊</span>
         <span class="line-strike"></span>
-    </button>
-</div>
+      </button>
+    </div>
 
+    <!-- Modernleştirilmiş Başlık Yapısı -->
+    <h2 id="mainTitle" class="modern-title">
+      <span class="title-light">Karar</span> 
+      <span class="title-bold">Çarkı</span>
+      <span class="title-icon">🎡</span>
+    </h2>
 
-    <h2 id="mainTitle">Karar Çarkı 🎡</h2>
-    
+    <!-- Seçenek giriş alanları -->
     <div class="input-group" id="inputContainer">
       <div class="input-wrapper">
         <input type="text" class="option-input" placeholder="Seçenek 1 (Örn: Ders Çalışmak)">
@@ -28,21 +36,28 @@
       </div>
     </div>
 
+    <!-- Seçenek ekleme ve döndürme butonları -->
     <div class="btn-group">
       <button id="addOptionBtn">➕ Seçenek Ekle</button>
-      <button id="kararverbtn">Çarkı Döndür 🚀</button>
     </div>
-    
+
+    <!-- Çark alanı -->
     <div class="wheel-box">
       <canvas id="wheelCanvas" width="300" height="300"></canvas>
+      <!-- Çark döndürme butonu -->
+      <button id="kararverbtn" class="wheel-play-btn" aria-label="Çarkı döndür">▶︎</button>
     </div>
 
     <p id="sonucYazisi"></p>
+
+    <!-- Filigran -->
     <div class="watermark">BY TARIK SANCAR</div>
+
+    <!-- Ses dosyası -->
     <audio id="audio" src="music.mp3"></audio>
 
   </div>
-  
+
   <script src="script.js"></script>
 </body>
 </html>
