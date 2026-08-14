@@ -22,14 +22,36 @@ body {
   position: relative; /* Butonların konumlanması için şart */
 }
 
-h2 {
-  font-size: 28px;
-  margin-top: 0;
-  background: linear-gradient(to right, #38bdf8, #818cf8);
+h2#mainTitle {
+  position: relative;
+
+  margin: 4px 0 24px;
+  padding-bottom: 12px;
+
+  color: #e0f2fe;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: clamp(24px, 5vw, 30px);
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+
+  background: linear-gradient(
+    100deg,
+    #38bdf8 0%,
+    #818cf8 52%,
+    #ec4899 100%
+  );
+
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.22));
 }
+
+
+ 
+
 
 /* --- YENİLENEN BUTON GRUBU KAPSAYICISI --- */
 .lang-container {
@@ -66,7 +88,7 @@ h2 {
 .lang-btn:hover {
   background: rgba(168, 85, 247, 0.2);
   color: #ffffff;
-  border-color: rgba(168, 85, 247, 0.8);
+  border-color: rgba(107, 75, 90, 0.8);
   box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
   transform: translateY(-1px);
 }
@@ -84,8 +106,8 @@ h2 {
   position: absolute;
   width: 80%;
   height: 2.5px;
-  background-color: #ef4444; /* Neon Kırmızı Çizgi */
-  box-shadow: 0 0 8px #ef4444;
+  background-color: #ec4899; /* Neon Kırmızı Çizgi */
+  box-shadow: 0 0 8px #ec4899;
   transform: rotate(45deg) scaleX(0);
   transition: transform 0.2s ease-in-out;
   transform-origin: center;
@@ -144,8 +166,8 @@ h2 {
     position: absolute;
     width: 100%;
     height: 3px;
-    background-color: #ef4444; /* Neon Kırmızı */
-    box-shadow: 0 0 8px #ef4444;
+    background-color: #ec4899; /* Neon Kırmızı */
+    box-shadow: 0 0 8px #ec4899;
     transform: rotate(45deg) scaleX(0); /* İlk başta gizli ve boyutu sıfır */
     transition: transform 0.2s ease-in-out;
     transform-origin: center;
@@ -205,7 +227,7 @@ h2 {
 .remove-btn {
   background: rgba(244, 63, 94, 0.2);
   border: 1px solid #f43f5e;
-  color: #f43f5e;
+  color: #ec4899;
   border-radius: 10px;
   padding: 12px;
   cursor: pointer;
@@ -214,7 +236,7 @@ h2 {
 }
 
 .remove-btn:hover {
-  background: #f43f5e;
+  background: #ec4899;
   color: white;
   box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
 }
@@ -244,46 +266,86 @@ h2 {
   color: white;
   box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
 }
-
-#kararverbtn {
-  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-  color: white;
-  border: none;
-  padding: 14px 25px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.3s;
-  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
-}
-
-#kararverbtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(236, 72, 153, 0.5);
-}
-
-#kararverbtn:disabled {
-  background: #475569;
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-
+/* Çark alanı */
 .wheel-box {
   position: relative;
-  margin: 25px auto;
   width: 300px;
   height: 300px;
-  border-radius: 50%;
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
-}
-
-#wheelCanvas {
-  border-radius: 50%;
+  max-width: 100%;
+  margin: 20px auto;
   display: block;
 }
 
+/* Çark */
+#wheelCanvas {
+  display: block;
+  width: 300px;
+  height: 300px;
+  max-width: 100%;
+  margin: 0 auto;
+  border-radius: 50%;
+}
+
+/* Sadece play butonu */
+#kararverbtn.wheel-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 40px;
+  height: 40px;
+  
+
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: translate(-50%, -50%) !important;
+
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+
+  background: #ec4899;
+  color: #ffffff;
+
+  font-family: Arial, sans-serif;
+  font-size: 30px;
+  font-weight: normal;
+  line-height: 1;
+
+  cursor: pointer;
+  z-index: 10;
+
+  /* Dışındaki mor alanı ve gölgeyi kaldırır */
+  box-shadow: none;
+  transition: none;
+}
+
+/* Fare üzerine gelince hareket etmesin */
+#kararverbtn.wheel-play-btn:hover {
+  background: #ec4899;
+  box-shadow: none;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Tıklarken hareket etmesin */
+#kararverbtn.wheel-play-btn:active {
+  background: #ec4899;
+  box-shadow: none;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Çark dönerken */
+#kararverbtn.wheel-play-btn:disabled {
+  background: #ec4899;
+  box-shadow: none;
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: translate(-50%, -50%) !important;
+}
 #sonucYazisi {
   font-weight: 600;
   color: #f43f5e;
@@ -330,9 +392,14 @@ h2 {
 }
 
 #modalRetryBtn { background: #475569; color: white; }
-#modalOkBtn { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+#modalOkBtn { background: linear-gradient(135deg, #b3be12, #059669); color: white; }
 #modalRetryBtn:hover { background: #334155; }
 #modalOkBtn:hover { opacity: 0.9; }
+ #retryBtn{
+margin-Right : 12px;
+
+ }
+
 /* Ana panelin pozisyon ayarı (Filigranın panel dışına taşmaması için gereklidir) */
 .container {
   position: relative; /* Eğer CSS'inizde yoksa bu satırı ekleyin veya kontrol edin */
@@ -350,4 +417,24 @@ h2 {
   letter-spacing: 0.5px;
   user-select: none; /* Kullanıcının yazıyı kazara seçmesini engeller */
   pointer-events: none; /* Tıklamaları engeller, arkadaki elemanları etkilemez */
+}
+.wheel-box {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: 20px auto;
+  display: block;
+}
+.fireworks-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.modal-card {
+  position: relative;
+  z-index: 1;
 }
