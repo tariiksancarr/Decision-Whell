@@ -73,18 +73,19 @@ const dilSozlugu = {
     TR: {
         title: "Karar Çarkı 🎡",
         addBtn: "➕ Seçenek Ekle",
-        spinBtn: "Çarkı Döndür 🚀",
+        spinBtn: "▶︎",
         errorText: "Çarkı döndürmek için en az 2 seçenek yazmalısınız!",
         modalTitle: "Sonuç Seçildi 🎯",
         modalAll: "Seçenekler:",
         modalRetry: "🔄 Tekrar Çevir",
         modalOk: "✅ Tamam",
         placeholder: "Seçenek "
+        
     },
     EN: {
         title: "Decision Wheel 🎡",
         addBtn: "➕ Add Option",
-        spinBtn: "Spin the Wheel 🚀",
+        spinBtn: "▶︎",
         errorText: "You must write at least 2 options to spin!",
         modalTitle: "Result Chosen 🎯",
         modalAll: "Options:",
@@ -122,14 +123,16 @@ let secenekler = [];
 let startAngle = 0;
 let spinTimeout = null;
 let spinAngleIncrement = 0;
+let pointerKick = 0;
+let pointerVelocity = 0;
 
-const renkler = ["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#2a9d8f", "#06d6a0", "#f4a261", "#e76f51", "#264653", "#2a9d8f", "#e9c46a"];
+const renkler = ["#264653", "#e9c46a", "#79c731", "#f4a261", "#e76f51", "#2a9d8f", "#06d6a0", "#6441a7", "#0f3ea3", "#264653", "#5c260d", "#24724b"];
 
 
 function uiGuncelle() {
     // Büyük harf yapınıza (TR / EN) uygun hale getirildi
     mainTitle.textContent = dilSozlugu[currentLang].title;
-    kararBtn.textContent = dilSozlugu[currentLang].spinBtn;
+    kararBtn.textContent = "▶︎";
     addOptionBtn.textContent = dilSozlugu[currentLang].addBtn;
     
     // Tüm mevcut kutuların placeholder metinlerini güncelle
@@ -163,6 +166,49 @@ dilDegistirBtn.addEventListener("click", () => {
         drawWheel([]); // İçerisi boşsa drawWheel kendi içindeki ["?", "?"] korumasını tetikler
     }
 });
+function drawPegs(count) {
+    const arc = (Math.PI * 2) / count;
+
+    for (let i = 0; i < count; i++) {
+        let angle = arc * i;
+
+        // İki seçenekli çarkta mevcut açı kaydırmasını koru
+        if (count === 2) {
+            angle += Math.PI / 2;
+        }
+
+        const pegX = Math.cos(angle) * 125;
+        const pegY = Math.sin(angle) * 125;
+
+        ctx.save();
+        ctx.translate(pegX, pegY);
+        ctx.rotate(angle);
+
+        // Çivinin gölgesi
+        ctx.shadowColor = "rgba(0, 0, 0, 0.65)";
+        ctx.shadowBlur = 1;
+
+        // Metal pim gövdesi
+        ctx.fillStyle = "#e5e7eb";
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.arc(0, 0, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Parlaklık noktası
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#ffffff";
+
+        ctx.beginPath();
+        ctx.arc(-2, -2, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
 // Sayfa ilk açıldığında çarkın boş kalmaması için ilk çizimi yapıyoruz
 drawWheel([]); 
 uiGuncelle(); // Dil ayarlarına göre metinleri de ilk açılışta doldurur
@@ -186,7 +232,7 @@ function drawWheel(options) {
     let displayOptions = currentOptions.length > 0 ? currentOptions : ["?", "?"];
     let arc = (Math.PI * 2) / displayOptions.length;
     
-    // --- 1. DÖNEN ÇARK ÇİZİMİ ---
+    // --- 1. DÖNEN ÇARK ÇİZİMİ ---<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     ctx.save();
     ctx.translate(150, 150); // Çarkın merkezi
     ctx.rotate(startAngle);  // Sadece çarkı döndürür
@@ -199,22 +245,21 @@ function drawWheel(options) {
             startArc += Math.PI / 2;
             endArc += Math.PI / 2;
         }
-
+        
         // Dilim Çizimi
         ctx.beginPath();
         ctx.fillStyle = renkler[i % renkler.length];
         ctx.moveTo(0, 0);
-        ctx.arc(0, 0, 150, startArc, endArc);
+        ctx.arc(0, 0, 180, startArc, endArc);
         ctx.lineTo(0, 0);
-        ctx.fill();
+       ctx.arc(0, 0, 180, startArc, endArc, false);
+       ctx.closePath();
+       ctx.fill();
+       
         
-        ctx.strokeStyle = "rgba(15, 23, 42, 0.5)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
         
-        // --- AKILLI YAZI ÇİZİMİ ---
                // --- YAZI ÇİZİMİ BAŞLIYOR ---
-                // --- YAZI ÇİZİMİ BAŞLIYOR ---
+    
         ctx.save();
         
         let textAngle = startArc + arc / 2; 
@@ -224,50 +269,52 @@ function drawWheel(options) {
         ctx.fillStyle = "white";
 
         // 1. Dinamik Font Boyutu Hesaplama
-        let fontSize = 16; // Başlangıç standart yazı boyutu
+        let fontSize = 20; // Başlangıç standart yazı boyutu
         ctx.font = `bold ${fontSize}px Arial`;
         
         let textWidth = ctx.measureText(displayOptions[i]).width;
-        let maxAllowedWidth = 125; // Tam ortaya kadar gelmesine izin verilen maksimum alan
+        let maxAllowedWidth = 120; // Tam ortaya kadar gelmesine izin verilen maksimum alan
 
         // Yazı sığana kadar ve 11px sınırına düşene kadar tatlı tatlı küçült
-        while (textWidth > maxAllowedWidth && fontSize > 60) {
+        while (textWidth > maxAllowedWidth && fontSize > 15) {
             fontSize -= 0.5;
             ctx.font = `bold ${fontSize}px Arial`;
             textWidth = ctx.measureText(displayOptions[i]).width;
         }
+        
+         drawPegs(displayOptions.length);
 
         // Belli bir küçülmeden (11px) sonra hala sığmıyorsa üç nokta koy
         let finalInlineText = displayOptions[i];
         if (textWidth > maxAllowedWidth) {
-            finalInlineText = finalInlineText.substring(0, 15) + "...";
-            ctx.font = "bold 11px Arial";
+            finalInlineText = finalInlineText.substring(0, 10) + "...";
+            ctx.font = "bold 20px Arial";
             textWidth = ctx.measureText(finalInlineText).width;
+            
         }
 
-        // Çarkın mutlak dönüş açısını hesapla (0 ile 2PI arasında)
-        let totalAngle = (startAngle + textAngle) % (2 * Math.PI);
-        if (totalAngle < 0) totalAngle += 2 * Math.PI;
+       // 1. Çarkın ANLIK toplam açısını hesaplayın (wheelAngle = çarkın o anki dönüş miktarı)
+// Not: wheelAngle değişkeninizin adını kendi kodunuza göre güncelleyin (örn: currentAngle, rotationAngle)
+let totalAngle = (startAngle + textAngle) % (2 * Math.PI);
+// --- 1. SABİT DİLİM AÇISI KONTROLÜ (Çark dönse de bu açı asla değişmez) ---
+// textAngle'ı 0 ile 2PI arasına sıkıştırıyoruz
+let cleanTextAngle = textAngle % (2 * Math.PI);
+if (cleanTextAngle < 0) cleanTextAngle += 2 * Math.PI;
 
-        // --- 2. YÖN VE HİZALAMA DÜZELTMESİ (BOŞ ALANI TAM KULLANMA) ---
-        ctx.rotate(textAngle); // Dilimin açısına dön
+// Kararı çarkın dönüşüne göre değil, dilimin çarktaki sabit yerine göre veriyoruz
+const isLeft = cleanTextAngle > Math.PI / 2 && cleanTextAngle < (3 * Math.PI) / 2;
 
-        // AÇI KONTROLÜ DÜZELTİLDİ: Gerçekten sol taraftaysa (90 ile 270 derece arası)
-        if (totalAngle > Math.PI / 2 && totalAngle < (3 * Math.PI) / 2) {
-            ctx.rotate(Math.PI); // Baş aşağı dönmesini engelle
-            ctx.textAlign = "right"; // Yazıyı sağa yasla (Merkezden dışarıya doğru aksın)
-            // Sol taraftaki yazının ucu tam ortadaki 0 noktasına bakar, kelime uzadıkça sola (dışa) doğru büyür
-            ctx.fillText(finalInlineText, -10, 0); 
-        } 
-        // Gerçekten sağ taraftaysa (0-90 ve 270-360 derece arası)
-        else {
-            ctx.textAlign = "left"; // Yazıyı sola yasla (Merkezden dışarıya doğru aksın)
-            // Sağ taraftaki yazının başlangıcı çarkın tam merkezinden (10px yanından) başlar, 
-            // kelime yazdıkça sağa (dış boşluğa) doğru genişler. Boş alanı tam kullanır!
-            ctx.fillText(finalInlineText, 10, 0); 
-        }
-        
-        ctx.restore();
+// --- 2. CANVAS DÖNDÜRME VE ÇİZİM ---
+ctx.rotate(textAngle); // Dilimin açısına dön
+
+if (isLeft) {
+    ctx.rotate(Math.PI); // Sol taraftaki dilimler için metni ters çevir
+}
+
+// Hizalama ve metni yazdırma
+ctx.textAlign = isLeft ? "right" : "left";
+ctx.fillText(finalInlineText, isLeft ? -25 : 25, 0);
+  ctx.restore();
 
 
     } 
@@ -277,12 +324,12 @@ function drawWheel(options) {
     // --- 2. SABİT DURAN SAĞDAKİ OK ---
     ctx.save();
     ctx.translate(300, 150); 
-    ctx.rotate(Math.PI);     
+    ctx.rotate(Math.PI + pointerKick);     
     
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.fillStyle = "#a11c6e";  
-    ctx.strokeStyle = "#a11c6e";
+    ctx.fillStyle = "#ec4899";  
+    ctx.strokeStyle = "#ec4899";
     
     ctx.beginPath();
     ctx.lineWidth = 8;   
@@ -303,58 +350,80 @@ function drawWheel(options) {
 
 
 function rotateAnimation() {
-    // 1. HİBRİT YAVAŞLAMA SİSTEMİ (Uzun dönüş ve titremesiz pürüzsüz duruş)
-    if (spinAngleIncrement > 1.5) {
-        spinAngleIncrement *= 0.995; // Çark hızlıyken uzun süre döner
+    pointerVelocity += (0 - pointerKick) * 0.20;
+    pointerVelocity *= 0.72;
+    pointerKick += pointerVelocity;
+
+    let currentSpeed = Math.abs(spinAngleIncrement);
+
+    // 1. HİBRİT YAVAŞLAMA SİSTEMİ
+    if (currentSpeed > 4.0) {
+        spinAngleIncrement *= 0.998; 
+    } else if (currentSpeed > 0.6) {
+        spinAngleIncrement *= 0.993; 
     } else {
-        spinAngleIncrement *= 0.96;  // Durmaya yakın yumuşak bir fren yapar (Titremez)
+        spinAngleIncrement *= 0.997; 
     }
 
     // Çarkın genel dönüş açısını radyan cinsinden artır
     startAngle += (spinAngleIncrement * Math.PI / 180);
     
-    // 2. KESİNTİSİZ SES VE TİTREŞİM TETİKLEME MATEMATİĞİ
+    // 2. KESİNTİSİZ SES VE OK TETİKLENME MATEMATİĞİ
     if (secenekler && secenekler.length > 0) {
         let toplamDilimSayisi = secenekler.length;
-        
-        // startAngle radyan açısını, 0 ile 360 derece arasına kusursuzca sıkıştırıyoruz
-        let guncelDerece = (startAngle * 180 / Math.PI) % 360;
-        if (guncelDerece < 0) guncelDerece += 360;
-        
-        // Sabit sağdaki oka (0 derece ekseni) göre anlık dilim genişliğini ve endeksini hesapla
         let dilimGenisligiDerece = 360 / toplamDilimSayisi;
-        let relativeDegrees = (360 - guncelDerece) % 360;
         
-        // Çarkın o an tam okun üstünden geçen dilim numarasını bulur (0, 1, 2 vb.)
-        let suAnkiDilimIndex = Math.floor(relativeDegrees / dilimGenisligiDerece);
+        // Çarkın anlık radyan açısını dereceye çevir
+        let guncelDerece = (startAngle * 180 / Math.PI);
         
-        // EĞER ÇARK DÖNERKEN DİLİM ÇİZGİSİ GEÇİLDİYSE VE ENDEKS DEĞİŞTİYSE:
+        // =================================================================
+        // 🎯 MİLİMETRİK KALİBRASYON ALANI (BURAYI DEĞİŞTİREREK AYARLAYIN)
+        // Eğer ok hâlâ ortada oynuyorsa aşağıdaki 90 değerini değiştirin:
+        // - Tam çizgiye gelmesi için: 0, 45, 90, -90 veya 180 değerlerini deneyin.
+        // - Çarkı üstten (270 dereceden) çizmeye başladıysanız burası genelde 90 veya -90 olur.
+        // =================================================================
+        let kalibrasyonAcisi = 90; 
+        
+        // Çark saat yönünde dönerken bağıl açıyı bul ve 0-360 arasına sıkıştır
+        let relativeDegrees = (360 - (guncelDerece + kalibrasyonAcisi)) % 360;
+        if (relativeDegrees < 0) relativeDegrees += 360;
+        
+        // Dilim indeksini Math.floor ile tam çizgi kırılmasında yakala
+        let suAnkiDilimIndex = Math.floor(relativeDegrees / dilimGenisligiDerece) % toplamDilimSayisi;
+        
+        // OKUN SALLANMA VE SES TETİKLENME ANI:
         if (suAnkiDilimIndex !== sonGecilenDilimIndex) {
             
-            // Mobil cihazlar için hafif titreşim tetiği
+            // Çarkın dönüş yönüne göre okun doğru tarafa esnemesi (+/-)
+            let yonIsareti = spinAngleIncrement >= 0 ? -1 : 1;
+            pointerVelocity = yonIsareti * 0.30; 
+
+            if (currentSpeed > 1.0) {
+                spinAngleIncrement *= 0.985;
+            }
+            
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
                 navigator.vibrate(10); 
             }
             
-            // YAPAY SESİ HER ÇİZGİ GEÇİŞİNDE DURMAKSIZIN TETİKLE
-            // Bu fonksiyon artık çark döndükçe saniyede onlarca kez peş peşe çağrılacak!
             calHizliCitSesi();
-            
-            // Son durumu kaydet ki aynı dilimin içindeyken ses mükerrer çalmasın, sadece çizgi geçişinde çalsın
             sonGecilenDilimIndex = suAnkiDilimIndex;
         }
     }
 
-    // 3. ÇARKIN YENİDEN ÇİZİLMESİ VE DÖNGÜ KONTROLÜ
     drawWheel(secenekler); 
     
-    // Hız 0.1'in üzerindeyse döngüyü requestAnimationFrame ile kesintisiz sürdür
-    if (spinAngleIncrement > 0.1) {
+    // Durma kontrolü
+    if (Math.abs(spinAngleIncrement) > 0.1) {
         spinTimeout = requestAnimationFrame(rotateAnimation);
     } else {
         stopWheel();
     }
 }
+
+
+
+
 
 
 // --- 4. Tetikleyici (Yöntem A Ses Motoru Aktifleştirildi) ---
@@ -384,72 +453,362 @@ function stopWheel() {
     
     // --- GÜVENLİK: Çark tam durduğu an yapay ses motorunun tıklarını tamamen kes ---
     if (audioCtx && audioCtx.state === 'running') {
-        // Ses motorunu geçici olarak askıya alıyoruz ki çıt çıt sesleri tamamen dursun
         audioCtx.suspend(); 
     }
 
-    let arc = (Math.PI * 2) / secenekler.length;
+    let toplamDilimSayisi = secenekler.length;
+    let dilimGenisligiDerece = 360 / toplamDilimSayisi;
+
     let degrees = (startAngle * 180 / Math.PI) % 360;
     if (degrees < 0) degrees += 360;
     
+    // Ok sağda olduğu için doğrudan 360 eksenine göre kazanan dilimi buluyoruz
     let relativeDegrees = (360 - degrees) % 360;
+    if (relativeDegrees < 0) relativeDegrees += 360;
     
-    let index = Math.floor(relativeDegrees / (arc * 180 / Math.PI));
-    index = (index + secenekler.length) % secenekler.length;
+    let index = Math.floor(relativeDegrees / dilimGenisligiDerece);
+    index = (index + toplamDilimSayisi) % toplamDilimSayisi;
     
     // Kazanan modalını aç
     openResultModal(secenekler[index], secenekler);
 }
 
 
+function launchFireworks(canvas) {
+    const ctx = canvas.getContext("2d");
+    let animationId;
+    let intervalId;
+    let active = true;
+    let particles = [];
+
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function createExplosion(x, y) {
+        const colors = ["#ec4899", "#8b5cf6", "#38bdf8", "#facc15", "#34d399", "#ffffff"];
+        const particleCount = 70;
+
+        for (let i = 0; i < particleCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 5 + 2;
+
+            particles.push({
+                x,
+                y,
+                velocityX: Math.cos(angle) * speed,
+                velocityY: Math.sin(angle) * speed,
+                gravity: 0.045,
+                friction: 0.985,
+                life: 1,
+                decay: Math.random() * 0.015 + 0.01,
+                size: Math.random() * 2.5 + 1,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+    }
+
+    function animate() {
+        if (!active) return;
+
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        particles = particles.filter((particle) => particle.life > 0);
+
+        particles.forEach((particle) => {
+            particle.velocityX *= particle.friction;
+            particle.velocityY = particle.velocityY * particle.friction + particle.gravity;
+
+            particle.x += particle.velocityX;
+            particle.y += particle.velocityY;
+            particle.life -= particle.decay;
+
+            ctx.save();
+            ctx.globalAlpha = Math.max(particle.life, 0);
+            ctx.fillStyle = particle.color;
+            ctx.shadowColor = particle.color;
+            ctx.shadowBlur = 8;
+
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        animationId = requestAnimationFrame(animate);
+    }
+
+    function randomExplosion() {
+        createExplosion(
+            Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1,
+            Math.random() * window.innerHeight * 0.45 + window.innerHeight * 0.1
+        );
+    }
+
+       resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    // İlk patlamalar
+    randomExplosion();
+    setTimeout(randomExplosion, 450);
+    setTimeout(randomExplosion, 800);
+
+    // Düzenli patlamalar
+    intervalId = setInterval(randomExplosion, 1000);
+
+        // ... (Yukarıdaki kodlar aynı kalıyor)
+    animate();
+
+    // DOĞRU SIRA: Önce durdurma fonksiyonunu tanımlıyoruz
+    function stopFireworksInternal() {
+        active = false; 
+        clearInterval(intervalId); 
+        clearTimeout(timeoutId); 
+        cancelAnimationFrame(animationId); 
+        window.removeEventListener("resize", resizeCanvas); 
+        ctx.clearRect(0, 0, canvas.width, canvas.height); 
+    }
+
+    // Şimdi zamanlayıcı stopFireworksInternal'ı güvenle çağırabilir
+    const timeoutId = setTimeout(function() {
+        stopFireworksInternal();
+    }, 10000); // 9 saniye için 9000 yazılmalı (1000 sadece 1 saniyedir)
+
+    // Modal butonlarının kullanabilmesi için fonksiyonu dışarı fırlatıyoruz
+    return stopFireworksInternal;
+} // launchFireworks bitti
 
 
+// =================================================================
 // 6. Sonuç Ekranı (Pop-up Modal)
+// =================================================================
 function openResultModal(chosen, options) {
     if (music) {
         music.currentTime = 0;
-        music.play().catch(() => console.log("Ses oynatma izni bekleniyor."));
+        music.play().catch(() => {
+            console.log("Ses oynatma izni bekleniyor.");
+        });
     }
 
+    // Modal arka planı
     const modalOverlay = document.createElement("div");
     modalOverlay.className = "modal-overlay";
-    
-    modalOverlay.innerHTML = `
-      <div class="modal-card">
-        <h3>${dilSozlugu[currentLang].modalTitle}</h3>
-        <h1 style="color:#00dfd8; margin:20px 0; text-shadow: 0 0 10px rgba(0,223,216,0.5);">${chosen}</h1>
-        <p style="color:#94a3b8; font-size:14px;">
-        <strong>${dilSozlugu[currentLang].modalAll}</strong><br>
-         ${options.join("<br>")}
-         </p>
-        <button id="modalRetryBtn">${dilSozlugu[currentLang].modalRetry}</button>
-        <button id="modalOkBtn">${dilSozlugu[currentLang].modalOk}</button>
-      </div>
-    `;
 
+    // Havai fişek canvas'ı
+    const fireworksCanvas = document.createElement("canvas");
+    fireworksCanvas.className = "fireworks-canvas";
+    modalOverlay.appendChild(fireworksCanvas);
+
+    // Modal kartı
+    const modalCard = document.createElement("div");
+    modalCard.className = "modal-card";
+
+    // Başlık
+    const titleH3 = document.createElement("h3");
+    titleH3.textContent = dilSozlugu[currentLang].modalTitle;
+    modalCard.appendChild(titleH3);
+
+    // Kazanan seçenek
+    const chosenH1 = document.createElement("h1");
+    chosenH1.style.color = "#00dfdb";
+    chosenH1.style.margin = "20px 0";
+    chosenH1.style.textShadow = "0 0 10px rgba(0, 223, 216, 0.5)";
+    chosenH1.textContent = chosen;
+    modalCard.appendChild(chosenH1);
+
+    // Diğer seçenekler
+    const optionsP = document.createElement("p");
+    optionsP.style.color = "#94a3b8";
+    optionsP.style.fontSize = "14px";
+
+    const strongTag = document.createElement("strong");
+    strongTag.textContent = dilSozlugu[currentLang].modalAll;
+
+    optionsP.appendChild(strongTag);
+    optionsP.appendChild(document.createElement("br"));
+
+    options.forEach((opt, index) => {
+        optionsP.appendChild(document.createTextNode(opt));
+
+        if (index < options.length - 1) {
+            optionsP.appendChild(document.createElement("br"));
+        }
+    });
+
+    modalCard.appendChild(optionsP);
+
+    // Tekrar dene butonu
+    const retryBtn = document.createElement("button");
+    retryBtn.id = "modalRetryBtn"; // CSS ID'si bağlandı
+    retryBtn.type = "button";
+    retryBtn.textContent = dilSozlugu[currentLang].modalRetry;
+    modalCard.appendChild(retryBtn);
+
+    // Tamam butonu
+    const okBtn = document.createElement("button");
+    okBtn.id = "modalOkBtn"; // CSS ID'si bağlandı
+    okBtn.type = "button";
+    okBtn.textContent = dilSozlugu[currentLang].modalOk;
+    modalCard.appendChild(okBtn);
+
+    // Modalı sayfaya ekle
+    modalOverlay.appendChild(modalCard);
     document.body.appendChild(modalOverlay);
 
-    document.getElementById("modalRetryBtn").addEventListener("click", () => {
+    // Havai fişekleri başlat
+    const stopFireworks = launchFireworks(fireworksCanvas);
+
+    // Tekrar dene olay dinleyicisi
+    retryBtn.addEventListener("click", () => {
         if (music) {
             music.pause();
             music.currentTime = 0;
         }
+        stopFireworks();
         modalOverlay.remove();
         kararBtn.disabled = false;
         kararBtn.click();
     });
 
-    document.getElementById("modalOkBtn").addEventListener("click", () => {
+    // Tamam olay dinleyicisi
+    okBtn.addEventListener("click", () => {
         if (music) {
             music.pause();
             music.currentTime = 0;
         }
+        stopFireworks();
         modalOverlay.remove();
         kararBtn.disabled = false;
     });
+} // openResultModal sonu
+// =================================================================
+// ELLE ÇARK ÇEVİRME VE SÜRÜKLEME MEKANİZMASI (DÜZELTİLMİŞ HİBRİT SİSTEM)
+// =================================================================
+let isDragging = false;
+let lastAngle = 0;
+let currentRotationVelocity = 0;
+let lastFrameTime = performance.now();
+
+function getPointerCoords(e) {
+    // Hem fare hem dokunmatik ekranlar için koordinatları güvenli bir şekilde alan yardımcı fonksiyon
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else if (e.changedTouches && e.changedTouches.length > 0) {
+        clientX = e.changedTouches[0].clientX;
+        clientY = e.changedTouches[0].clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+
+    return {
+        x: clientX - rect.left - canvas.width / 2,
+        y: clientY - rect.top - canvas.height / 2
+    };
 }
 
-// 7. Yeni Seçenek Ekleme Butonu
+function onPointerDown(e) {
+    if (kararBtn.disabled) return; 
+
+    let activeOptions = getInputs();
+    if (activeOptions.length < 2) {
+        sonucYazisi.textContent = dilSozlugu[currentLang].errorText;
+        return;
+    }
+
+    secenekler = activeOptions;
+    sonucYazisi.textContent = ""; 
+    isDragging = true;
+    
+    const coords = getPointerCoords(e);
+    lastAngle = Math.atan2(coords.y, coords.x);
+    lastFrameTime = performance.now();
+    currentRotationVelocity = 0;
+}
+
+function onPointerMove(e) {
+    if (!isDragging || !secenekler || secenekler.length < 2) return;
+
+    // Mobil cihazda çarkı çevirirken tüm sayfanın kaymasını (scrolling) engeller
+    if (e.cancelable) {
+        e.preventDefault();
+    }
+
+    const coords = getPointerCoords(e);
+    const currentAngle = Math.atan2(coords.y, coords.x);
+    let angleDiff = currentAngle - lastAngle;
+    
+    // Açı atlamalarını (Giriş/Çıkış sınırlarını) yumuşatmak için (-PI ile +PI arası)
+    if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+    if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+    // Yön her iki cihazda da standarttır; hareket yönü artı olarak eklenir
+    startAngle += angleDiff; 
+    
+    drawWheel(secenekler);
+
+    const now = performance.now();
+    const dt = now - lastFrameTime;
+    if (dt > 0) {
+        // Radyan/milisaniye cinsinden hızı saniyeye çeviriyoruz
+        currentRotationVelocity = angleDiff / dt; 
+    }
+
+    lastAngle = currentAngle;
+    lastFrameTime = now;
+}
+
+function onPointerUp(e) {
+    if (!isDragging) return;
+    isDragging = false;
+
+    if (!secenekler || secenekler.length < 2) {
+        sonucYazisi.textContent = dilSozlugu[currentLang].errorText;
+        return;
+    }
+
+    // Kullanıcının çarkı ne kadar hızlı fırlattığını kontrol ediyoruz
+    if (Math.abs(currentRotationVelocity) > 0.001) {
+        sonucYazisi.textContent = ""; 
+        kararBtn.disabled = true; 
+        
+        // Fırlatma hızını animasyon kare hızına (saf derece cinsinden) dönüştürün
+        spinAngleIncrement = currentRotationVelocity * 150; 
+        
+        // Çarkın çok yavaş kalıp hemen durmaması için minimum fırlatma hızı eşiği
+        const minHiz = 12 + Math.random() * 6;
+        if (Math.abs(spinAngleIncrement) < minHiz) {
+            spinAngleIncrement = spinAngleIncrement < 0 ? -minHiz : minHiz;
+        }
+
+        if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        rotateAnimation(); 
+    }
+}
+
+// Olay dinleyicileri (Mobil kayma sorunu için passive: false yapıldı)
+canvas.addEventListener('mousedown', onPointerDown);
+window.addEventListener('mousemove', onPointerMove, { passive: false });
+window.addEventListener('mouseup', onPointerUp);
+
+canvas.addEventListener('touchstart', onPointerDown);
+window.addEventListener('touchmove', onPointerMove, { passive: false });
+window.addEventListener('touchend', onPointerUp);
+
+// =================================================================
+// 7. Yeni Seçenek Ekleme ve Buton Kontrolleri (Stabilize Edildi)
+// =================================================================
 addOptionBtn.addEventListener("click", () => {
     const totalInputs = inputContainer.querySelectorAll(".input-wrapper").length;
     const wrapper = document.createElement("div");
@@ -462,7 +821,11 @@ addOptionBtn.addEventListener("click", () => {
     
     inputContainer.appendChild(wrapper);
     
-    wrapper.querySelector(".option-input").addEventListener("input", () => drawWheel(getInputs()));
+    // Performans için sadece girdi değiştikçe çizim tetiklenir
+    wrapper.querySelector(".option-input").addEventListener("input", () => {
+        drawWheel(getInputs());
+    });
+    
     wrapper.querySelector(".remove-btn").addEventListener("click", () => {
         wrapper.remove();
         uiGuncelle();
@@ -472,7 +835,8 @@ addOptionBtn.addEventListener("click", () => {
     uiGuncelle();
 });
 
-// İlk yüklemedeki 3. kutunun çarpı butonunu çalıştırır
+
+// İlk yüklemedeki kutuların çarpı butonlarını çalıştırır
 inputContainer.querySelectorAll(".remove-btn").forEach(btn => {
     btn.addEventListener("click", (e) => {
         e.target.parentElement.remove();
@@ -488,7 +852,7 @@ inputContainer.addEventListener("input", (e) => {
     }
 });
 
-// Çarkı Döndür Ana Butonu
+// Çarkı Döndür Ana Butonu (Tıklama ile döndürme)
 kararBtn.addEventListener("click", function() {
     let activeOptions = getInputs();
     
@@ -502,21 +866,10 @@ kararBtn.addEventListener("click", function() {
     spinWheel(activeOptions);
 });
 
-// Dil Ayarı Buton Olayları
-document.getElementById("langTR").addEventListener("click", (e) => {
-    currentLang = "TR";
-    document.getElementById("langEN").classList.remove("active");
-    e.target.classList.add("active");
-    uiGuncelle();
-});
-
-document.getElementById("langEN").addEventListener("click", (e) => {
-    currentLang = "EN";
-    document.getElementById("langTR").classList.remove("active");
-    e.target.classList.add("active");
-    uiGuncelle();
-});
-
-// Başlangıç Kurulumları
+// =================================================================
+// Başlangıç Kurulumları (En Son Çalışacak Kısım)
+// =================================================================
 uiGuncelle();
 drawWheel(getInputs());
+
+
