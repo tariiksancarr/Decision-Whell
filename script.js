@@ -1,6 +1,5 @@
 // --- YEREL DOSYAYA İHTİYAÇ DUYMAYAN YAPAY SES MOTORU (YÖNTEM A) ---
 let audioCtx = null;
-let sonGecilenDilimIndex = -1; 
 let sesAcik = true; // Ses başlangıçta açık
 
 const sesToggleBtn = document.getElementById("sesToggleBtn");
@@ -282,7 +281,7 @@ function drawWheel(options) {
             textWidth = ctx.measureText(displayOptions[i]).width;
         }
         
-         drawPegs(displayOptions.length);
+        
 
         // Belli bir küçülmeden (11px) sonra hala sığmıyorsa üç nokta koy
         let finalInlineText = displayOptions[i];
@@ -314,11 +313,16 @@ if (isLeft) {
 // Hizalama ve metni yazdırma
 ctx.textAlign = isLeft ? "right" : "left";
 ctx.fillText(finalInlineText, isLeft ? -25 : 25, 0);
-  ctx.restore();
+
+
+
+        
+        ctx.restore();
+
 
 
     } 
-    
+    drawPegs(displayOptions.length);
     ctx.restore(); // Çark dönme efektini sıfırla (Ok etkilenmez)
     
     // --- 2. SABİT DURAN SAĞDAKİ OK ---
@@ -350,69 +354,76 @@ ctx.fillText(finalInlineText, isLeft ? -25 : 25, 0);
 
 
 function rotateAnimation() {
-    pointerVelocity += (0 - pointerKick) * 0.20;
-    pointerVelocity *= 0.72;
-    pointerKick += pointerVelocity;
-
     let currentSpeed = Math.abs(spinAngleIncrement);
 
-    // 1. HİBRİT YAVAŞLAMA SİSTEMİ
+    // Çarkın yavaşlama sistemi
     if (currentSpeed > 4.0) {
-        spinAngleIncrement *= 0.998; 
+        spinAngleIncrement *= 0.998;
     } else if (currentSpeed > 0.6) {
-        spinAngleIncrement *= 0.993; 
+        spinAngleIncrement *= 0.993;
     } else {
-        spinAngleIncrement *= 0.997; 
+        spinAngleIncrement *= 0.997;
     }
 
-    // Çarkın genel dönüş açısını radyan cinsinden artır
-    startAngle += (spinAngleIncrement * Math.PI / 180);
-    
-    // 2. KESİNTİSİZ SES VE OK TETİKLENME MATEMATİĞİ
+    // Çarkın açısını güncelle
+    startAngle += spinAngleIncrement * Math.PI / 180;
+
+    // Pim geçişi, ses ve ok hareketi
     if (secenekler && secenekler.length > 0) {
         let toplamDilimSayisi = secenekler.length;
         let dilimGenisligiDerece = 360 / toplamDilimSayisi;
-        
-        // Çarkın anlık radyan açısını dereceye çevir
-        let guncelDerece = (startAngle * 180 / Math.PI);
-        
-        // =================================================================
-        // 🎯 MİLİMETRİK KALİBRASYON ALANI (BURAYI DEĞİŞTİREREK AYARLAYIN)
-        // Eğer ok hâlâ ortada oynuyorsa aşağıdaki 90 değerini değiştirin:
-        // - Tam çizgiye gelmesi için: 0, 45, 90, -90 veya 180 değerlerini deneyin.
-        // - Çarkı üstten (270 dereceden) çizmeye başladıysanız burası genelde 90 veya -90 olur.
-        // =================================================================
-        let kalibrasyonAcisi = 90; 
-        
-        // Çark saat yönünde dönerken bağıl açıyı bul ve 0-360 arasına sıkıştır
-        let relativeDegrees = (360 - (guncelDerece + kalibrasyonAcisi)) % 360;
-        if (relativeDegrees < 0) relativeDegrees += 360;
-        
-        // Dilim indeksini Math.floor ile tam çizgi kırılmasında yakala
-        let suAnkiDilimIndex = Math.floor(relativeDegrees / dilimGenisligiDerece) % toplamDilimSayisi;
-        
-        // OKUN SALLANMA VE SES TETİKLENME ANI:
-        if (suAnkiDilimIndex !== sonGecilenDilimIndex) {
-            
-            // Çarkın dönüş yönüne göre okun doğru tarafa esnemesi (+/-)
-            let yonIsareti = spinAngleIncrement >= 0 ? -1 : 1;
-            pointerVelocity = yonIsareti * 0.30; 
 
+        let guncelDerece = startAngle * 180 / Math.PI;
+
+        // Sadece iki seçenekli çarkta 90 derece kaydırma var
+        let kalibrasyonAcisi =
+            toplamDilimSayisi === 2 ? 90 : 0;
+
+        // Bağıl açıyı 0-360 arasına getir
+        let relativeDegrees =
+            (360 - (guncelDerece + kalibrasyonAcisi)) % 360;
+
+        if (relativeDegrees < 0) {
+            relativeDegrees += 360;
+        }
+
+        // Okun hizasındaki dilimi bul
+        let suAnkiDilimIndex =
+            Math.floor(relativeDegrees / dilimGenisligiDerece)
+            % toplamDilimSayisi;
+
+        // Yeni dilime geçildiğinde oku ve sesi çalıştır
+        if (suAnkiDilimIndex !== sonGecilenDilimIndex) {
+            let yonIsareti =
+                spinAngleIncrement >= 0 ? -1 : 1;
+
+            pointerVelocity = yonIsareti * 0.30;
+
+            // Pim geçişinde çarkı biraz yavaşlat
             if (currentSpeed > 1.0) {
                 spinAngleIncrement *= 0.985;
             }
-            
-            if (typeof navigator !== 'undefined' && navigator.vibrate) {
-                navigator.vibrate(10); 
+
+            if (
+                typeof navigator !== "undefined" &&
+                navigator.vibrate
+            ) {
+                navigator.vibrate(10);
             }
-            
+
             calHizliCitSesi();
+
             sonGecilenDilimIndex = suAnkiDilimIndex;
         }
     }
 
-    drawWheel(secenekler); 
-    
+    // Bu bölüm pim kontrolünden sonra çalışmalı
+    pointerVelocity += (0 - pointerKick) * 0.20;
+    pointerVelocity *= 0.72;
+    pointerKick += pointerVelocity;
+
+    drawWheel(secenekler);
+
     // Durma kontrolü
     if (Math.abs(spinAngleIncrement) > 0.1) {
         spinTimeout = requestAnimationFrame(rotateAnimation);
@@ -430,23 +441,29 @@ function rotateAnimation() {
 // --- 4. Tetikleyici (Buton Kilitlemeyen ve Ses Uyandıran Sürüm) ---
 function spinWheel(options) {
     try {
-        // Tarayıcının ses motorunu güvenli bir şekilde uyandır (Çakışma yaratmaz)
-        if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') {
+        if (
+            typeof audioCtx !== "undefined" &&
+            audioCtx &&
+            audioCtx.state === "suspended"
+        ) {
             audioCtx.resume();
         }
-        
-        // Ses motoru henüz oluşmadıysa veya sustuysa ilk çıt sesini tetikle (Korumayı aşar)
-        calHizliCitSesi(); 
+
+        calHizliCitSesi();
     } catch (e) {
         console.log("Ses uyandırılırken hata atlandı:", e);
     }
 
-    // Butonun asıl yapması gereken çark döndürme işlevleri kesintisiz devam eder
+    // Yeni dönüşte eski değerleri temizle
+    sonGecilenDilimIndex = -1;
+    pointerKick = 0;
+    pointerVelocity = 0;
+
     secenekler = options;
-    spinAngleIncrement = Math.random() * 15 + 30; // Başlangıç fırlatılma hızı
+    spinAngleIncrement = Math.random() * 15 + 30;
+
     rotateAnimation();
 }
-
 
 function stopWheel() {
     cancelAnimationFrame(spinTimeout);
@@ -463,8 +480,16 @@ function stopWheel() {
     if (degrees < 0) degrees += 360;
     
     // Ok sağda olduğu için doğrudan 360 eksenine göre kazanan dilimi buluyoruz
-    let relativeDegrees = (360 - degrees) % 360;
-    if (relativeDegrees < 0) relativeDegrees += 360;
+    let kalibrasyonAcisi =
+    toplamDilimSayisi === 2 ? 90 : 0;
+
+let relativeDegrees =
+    (360 - (degrees + kalibrasyonAcisi)) % 360;
+
+if (relativeDegrees < 0) {
+    relativeDegrees += 360;
+}
+ 
     
     let index = Math.floor(relativeDegrees / dilimGenisligiDerece);
     index = (index + toplamDilimSayisi) % toplamDilimSayisi;
@@ -685,6 +710,7 @@ function openResultModal(chosen, options) {
         kararBtn.disabled = false;
     });
 } // openResultModal sonu
+
 // =================================================================
 // ELLE ÇARK ÇEVİRME VE SÜRÜKLEME MEKANİZMASI (DÜZELTİLMİŞ HİBRİT SİSTEM)
 // =================================================================
@@ -694,9 +720,10 @@ let currentRotationVelocity = 0;
 let lastFrameTime = performance.now();
 
 function getPointerCoords(e) {
-    // Hem fare hem dokunmatik ekranlar için koordinatları güvenli bir şekilde alan yardımcı fonksiyon
     const rect = canvas.getBoundingClientRect();
-    let clientX, clientY;
+
+    let clientX;
+    let clientY;
 
     if (e.touches && e.touches.length > 0) {
         clientX = e.touches[0].clientX;
@@ -710,8 +737,8 @@ function getPointerCoords(e) {
     }
 
     return {
-        x: clientX - rect.left - canvas.width / 2,
-        y: clientY - rect.top - canvas.height / 2
+        x: clientX - rect.left - rect.width / 2,
+        y: clientY - rect.top - rect.height / 2
     };
 }
 
@@ -792,7 +819,9 @@ function onPointerUp(e) {
         if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
-
+          sonGecilenDilimIndex = -1;
+          pointerKick = 0;
+          pointerVelocity = 0;
         rotateAnimation(); 
     }
 }
