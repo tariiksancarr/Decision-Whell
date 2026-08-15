@@ -284,6 +284,7 @@ h2#mainTitle {
   max-width: 100%;
   margin: 0 auto;
   border-radius: 50%;
+  touch-action: none;
 }
 
 /* Sadece play butonu */
